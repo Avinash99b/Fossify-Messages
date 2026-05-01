@@ -1,5 +1,6 @@
 [versions]
 #jetbrains
+androidNetworking = "1.0.4"
 kotlin = "2.3.21"
 kotlinxSerializationJson = "1.11.0"
 #KSP
@@ -30,8 +31,12 @@ app-build-javaVersion = "VERSION_17"
 app-build-kotlinJVMTarget = "17"
 #Helpers
 ez-vcard = "0.12.2"
+appcompat = "1.6.1"
+material = "1.10.0"
+activityKtx = "1.8.0"
 [libraries]
 #AndroidX
+android-networking = { module = "com.github.amitshekhariitbhu.Fast-Android-Networking:android-networking", version.ref = "androidNetworking" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycleprocess" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "androidx-swiperefreshlayout" }
@@ -52,6 +57,9 @@ eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 ez-vcard = { module = "com.googlecode.ez-vcard:ez-vcard", version.ref = "ez-vcard" }
 #Kotlin
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 [bundles]
 room = [
     "androidx-room-ktx",

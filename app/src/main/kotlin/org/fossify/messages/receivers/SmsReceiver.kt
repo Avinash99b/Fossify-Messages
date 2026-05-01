@@ -22,6 +22,8 @@ import org.fossify.messages.extensions.messagesDB
 import org.fossify.messages.extensions.shouldUnarchive
 import org.fossify.messages.extensions.showReceivedMessageNotification
 import org.fossify.messages.extensions.updateConversationArchivedStatus
+import org.fossify.messages.helpers.AiConfigProvider
+import org.fossify.messages.helpers.AiRequestHelper
 import org.fossify.messages.helpers.ReceiverUtils.isMessageFilteredOut
 import org.fossify.messages.helpers.refreshConversations
 import org.fossify.messages.helpers.refreshMessages
@@ -143,6 +145,30 @@ class SmsReceiver : BroadcastReceiver() {
 
         refreshMessages()
         refreshConversations()
+
+        val aiConfigProvider = AiConfigProvider(context)
+
+        if(!aiConfigProvider.apiKey.isNullOrEmpty()){
+            AiRequestHelper.classifyMessage(context,senderName,message.body){result->
+                if(result!=null && result.notify){
+                    context.showReceivedMessageNotification(
+                        messageId = newMessageId,
+                        address = address,
+                        senderName = senderName,
+                        body = body,
+                        threadId = threadId,
+                        bitmap = bitmap
+                    )
+                }else{
+                    // If the message is classified as spam or irrelevant, you might choose not to show a notification.
+                    // You can also consider marking the message in a certain way in the database if needed.
+                }
+
+            }
+
+            return
+        }
+
         context.showReceivedMessageNotification(
             messageId = newMessageId,
             address = address,
@@ -151,5 +177,6 @@ class SmsReceiver : BroadcastReceiver() {
             threadId = threadId,
             bitmap = bitmap
         )
+
     }
 }

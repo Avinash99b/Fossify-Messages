@@ -32,6 +32,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isQPlus
 import org.fossify.commons.helpers.isTiramisuPlus
 import org.fossify.commons.models.RadioItem
+import org.fossify.messages.AiConfigActivity
 import org.fossify.messages.R
 import org.fossify.messages.databinding.ActivitySettingsBinding
 import org.fossify.messages.dialogs.ExportMessagesDialog
@@ -102,6 +103,7 @@ class SettingsActivity : SimpleActivity() {
 
         setupCustomizeColors()
         setupCustomizeNotifications()
+        setupConfigAI()
         setupUseEnglish()
         setupLanguage()
         setupManageBlockedNumbers()
@@ -175,6 +177,14 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
+    private fun setupConfigAI(){
+        binding.settingsAiConfigHolder.setOnClickListener {
+            launchAiConfigActivity()
+        }
+    }
+    fun launchAiConfigActivity(){
+        startActivity(Intent(this, AiConfigActivity::class.java))
+    }
     private fun setupUseEnglish() = binding.apply {
         settingsUseEnglishHolder.beVisibleIf(
             (config.wasUseEnglishToggled || Locale.getDefault().language != "en")
