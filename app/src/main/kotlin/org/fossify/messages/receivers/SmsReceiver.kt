@@ -120,7 +120,7 @@ class SmsReceiver : BroadcastReceiver() {
             anniversaries = ArrayList()
         )
 
-        var message = Message(
+        val message = Message(
             id = newMessageId,
             body = body,
             type = type,
@@ -152,9 +152,6 @@ class SmsReceiver : BroadcastReceiver() {
         if(!aiConfigProvider.apiKey.isNullOrEmpty()){
             AiRequestHelper.classifyMessage(context, senderName, message.body){ result->
                 if(result != null && result.notify){
-                    // Update message with reasoning and show notification
-                    val updatedMessage = message.copy(aiNotificationReasoning = result.reasoning)
-                    context.messagesDB.insertOrUpdate(updatedMessage)
 
                     context.showReceivedMessageNotification(
                         messageId = newMessageId,
@@ -167,7 +164,11 @@ class SmsReceiver : BroadcastReceiver() {
                 } else if(result != null) {
                     // Message classified as spam or irrelevant, update reasoning but don't show notification
                     val updatedMessage = message.copy(aiNotificationReasoning = result.reasoning)
-                    context.messagesDB.insertOrUpdate(updatedMessage)
+                    Thread {
+                        context.messagesDB.updateAiReasoning(updatedMessage.id,updatedMessage.aiNotificationReasoning)
+                        refreshMessages()
+                        refreshConversations()
+                    }.start()
                 }
 
             }

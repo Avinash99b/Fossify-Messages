@@ -154,6 +154,7 @@ fun Context.getMessages(
         val date = (cursor.getLongValue(Sms.DATE) / 1000).toInt()
         val read = cursor.getIntValue(Sms.READ) == 1
         val thread = cursor.getLongValue(Sms.THREAD_ID)
+        val aiNotificationReasoning = this.messagesDB.getMessageWithId(id)?.aiNotificationReasoning
         val subscriptionId = cursor.getIntValueOr(
             key = Sms.SUBSCRIPTION_ID,
             defaultValue = SubscriptionManager.INVALID_SUBSCRIPTION_ID
@@ -189,7 +190,8 @@ fun Context.getMessages(
                 senderPhoneNumber = senderNumber,
                 senderName = senderName,
                 senderPhotoUri = photoUri,
-                subscriptionId = subscriptionId
+                subscriptionId = subscriptionId,
+                aiNotificationReasoning = aiNotificationReasoning?:""
             )
         messages.add(message)
     }

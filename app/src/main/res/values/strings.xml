@@ -156,5 +156,8 @@
     <string name="ai_config_prompt_info">Customize the prompt used to classify messages. Reset to default if needed.</string>
     <string name="ai_config_prompt_hint">Enter your custom classification prompt</string>
     <string name="ai_config_save">Save Configuration</string>
+    <string name="ai_logs_button">AI Logs</string>
+    <string name="ai_logs_title">AI Classification Logs</string>
+    <string name="ai_logs_empty">No AI classification logs available yet.</string>
     <string name="ai_config_clear">Clear All Data</string>
 </resources>

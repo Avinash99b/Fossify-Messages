@@ -6,6 +6,7 @@ import androidx.core.content.edit
 
 class AiConfigProvider(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
 
     var apiKey: String?
         get() = prefs.getString(KEY_API_KEY, "")
@@ -20,13 +21,24 @@ class AiConfigProvider(context: Context) {
         }
 
     var customPrompt: String?
-        get() = prefs.getString(CUSTOM_PROMPT_KEY, null)
+        get() {
+            val prompt = prefs.getString(CUSTOM_PROMPT_KEY, null).orEmpty().trim()
+            return if (prompt.isEmpty()) {
+                val defaultPrompt = defaultAiPrompt()
+                prefs.edit(commit = true) { putString(CUSTOM_PROMPT_KEY, defaultPrompt) }
+                defaultPrompt
+            } else {
+                prompt
+            }
+        }
         set(prompt) {
-            prefs.edit(commit = true) { putString(CUSTOM_PROMPT_KEY, prompt) }
+            val value = prompt?.trim().takeUnless { it.isNullOrEmpty() } ?: defaultAiPrompt()
+            prefs.edit(commit = true) { putString(CUSTOM_PROMPT_KEY, value) }
         }
 
     fun clear() {
         prefs.edit(commit = true) { clear() }
+        AiDecisionLogger.clearLogs(appContext)
     }
 
     companion object {

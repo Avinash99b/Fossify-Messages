@@ -1,14 +1,21 @@
 package org.fossify.messages
 
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
+import android.view.ViewGroup
 import android.widget.Toast
+import android.widget.TextView
+import android.widget.ScrollView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.setPadding
+import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.messages.databinding.ActivityAiConfigBinding
 import org.fossify.messages.helpers.AiConfigProvider
+import org.fossify.messages.helpers.AiDecisionLogger
 import org.fossify.messages.helpers.AiRequestHelper
 
 class AiConfigActivity : AppCompatActivity() {
@@ -41,6 +48,10 @@ class AiConfigActivity : AppCompatActivity() {
             saveConfiguration(aiConfigProvider)
         }
 
+        binding.aiLogsBtn.setOnClickListener {
+            showAiLogsDialog()
+        }
+
         // Reset prompt button click listener
         binding.resetPromptBtn.setOnClickListener {
             resetPrompt()
@@ -71,17 +82,15 @@ class AiConfigActivity : AppCompatActivity() {
         // Save configuration
         aiConfigProvider.apiKey = apiKey
         aiConfigProvider.model = modelName
-        if (!customPrompt.isNullOrEmpty()) {
-            aiConfigProvider.customPrompt = customPrompt
-        }
+        aiConfigProvider.customPrompt = customPrompt
 
         Toast.makeText(this, "Configuration saved successfully", Toast.LENGTH_SHORT).show()
     }
 
     private fun resetPrompt() {
-        // Get the default prompt
-        val defaultPrompt = AiRequestHelper.getFullPrompt("Sample Sender", "Sample message").substringBefore("\nSender:")
+        val defaultPrompt = AiRequestHelper.defaultPrompt()
         binding.promptInput.setText(defaultPrompt)
+        AiConfigProvider(this).customPrompt = defaultPrompt
 
         Toast.makeText(this, "Prompt reset to default", Toast.LENGTH_SHORT).show()
     }
@@ -92,8 +101,38 @@ class AiConfigActivity : AppCompatActivity() {
         // Clear UI fields
         binding.apiKeyInput.setText("")
         binding.modelNameInput.setText("")
-        binding.promptInput.setText("")
+        binding.promptInput.setText(aiConfigProvider.customPrompt)
 
         Toast.makeText(this, "All configuration data cleared", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showAiLogsDialog() {
+        val logs = AiDecisionLogger.getLogs(this)
+
+        val textView = TextView(this).apply {
+            setTextIsSelectable(true)
+            movementMethod = ScrollingMovementMethod.getInstance()
+            textSize = 13f
+            setPadding((4 * resources.displayMetrics.density).toInt())
+            text = if (logs.isEmpty()) {
+                getString(R.string.ai_logs_empty)
+            } else {
+                logs.joinToString("\n\n────────────────────\n\n") { AiDecisionLogger.formatLogEntry(it) }
+            }
+        }
+
+        val scrollView = ScrollView(this).apply {
+            setPadding((16 * resources.displayMetrics.density).toInt())
+            addView(
+                textView,
+                ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            )
+        }
+
+        getAlertDialogBuilder()
+            .setTitle(R.string.ai_logs_title)
+            .setView(scrollView)
+            .setPositiveButton(org.fossify.commons.R.string.ok, null)
+            .show()
     }
 }

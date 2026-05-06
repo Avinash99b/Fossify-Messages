@@ -23,8 +23,18 @@ interface MessagesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMessages(vararg message: Message)
 
+    @Query("""
+        UPDATE messages
+        SET ai_notification_reasoning = :reasoning
+        WHERE id = :id
+        """)
+    fun updateAiReasoning(id: Long, reasoning: String)
+
     @Query("SELECT * FROM messages")
     fun getAll(): List<Message>
+
+    @Query("Select * from messages where id = :id")
+    fun getMessageWithId(id: Long): Message?
 
     @Query("SELECT messages.* FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NOT NULL")
     fun getAllRecycleBinMessages(): List<Message>
