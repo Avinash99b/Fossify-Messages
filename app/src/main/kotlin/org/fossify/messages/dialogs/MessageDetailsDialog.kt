@@ -5,7 +5,6 @@ import android.telephony.SubscriptionInfo
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.dialogs.BasePropertiesDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.getTimeFormatWithSeconds
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.messages.R
@@ -24,6 +23,11 @@ class MessageDetailsDialog(val activity: BaseSimpleActivity, val message: Messag
             addProperty(R.string.message_details_sim, message.getSIM(availableSIMs))
         }
         addProperty(message.getSentOrReceivedAtLabel(), message.getSentOrReceivedAt())
+
+        // Add AI notification reasoning if available
+        if (message.aiNotificationReasoning.isNotEmpty()) {
+            addProperty(R.string.message_details_ai_reasoning, message.aiNotificationReasoning)
+        }
 
         activity.getAlertDialogBuilder()
             .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ -> }

@@ -143,7 +143,9 @@ detekt {
 dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.fossify.commons)
+    implementation(libs.fossify.commons) {
+        exclude(group = "com.android.support")
+    }
     implementation(libs.eventbus)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.material)
@@ -158,5 +160,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     detektPlugins(libs.compose.detekt)
 
-    implementation(libs.android.networking)
+    implementation(libs.android.networking) {
+        exclude(group = "com.android.support")
+    }
 }

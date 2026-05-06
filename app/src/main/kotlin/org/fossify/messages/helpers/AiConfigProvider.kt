@@ -19,6 +19,12 @@ class AiConfigProvider(context: Context) {
             prefs.edit(commit = true) { putString(MODEL_NAME_KEY, apiKey)  }
         }
 
+    var customPrompt: String?
+        get() = prefs.getString(CUSTOM_PROMPT_KEY, null)
+        set(prompt) {
+            prefs.edit(commit = true) { putString(CUSTOM_PROMPT_KEY, prompt) }
+        }
+
     fun clear() {
         prefs.edit(commit = true) { clear() }
     }
@@ -28,5 +34,6 @@ class AiConfigProvider(context: Context) {
 
         private const val MODEL_NAME_KEY="model_name"
         private const val KEY_API_KEY = "api_key"
+        private const val CUSTOM_PROMPT_KEY = "custom_prompt"
     }
 }

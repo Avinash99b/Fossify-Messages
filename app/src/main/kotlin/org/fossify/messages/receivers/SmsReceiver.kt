@@ -120,7 +120,7 @@ class SmsReceiver : BroadcastReceiver() {
             anniversaries = ArrayList()
         )
 
-        val message = Message(
+        var message = Message(
             id = newMessageId,
             body = body,
             type = type,
@@ -134,7 +134,8 @@ class SmsReceiver : BroadcastReceiver() {
             senderPhoneNumber = address,
             senderName = senderName,
             senderPhotoUri = photoUri,
-            subscriptionId = subscriptionId
+            subscriptionId = subscriptionId,
+            aiNotificationReasoning = ""
         )
 
         context.messagesDB.insertOrUpdate(message)
@@ -149,8 +150,12 @@ class SmsReceiver : BroadcastReceiver() {
         val aiConfigProvider = AiConfigProvider(context)
 
         if(!aiConfigProvider.apiKey.isNullOrEmpty()){
-            AiRequestHelper.classifyMessage(context,senderName,message.body){result->
-                if(result!=null && result.notify){
+            AiRequestHelper.classifyMessage(context, senderName, message.body){ result->
+                if(result != null && result.notify){
+                    // Update message with reasoning and show notification
+                    val updatedMessage = message.copy(aiNotificationReasoning = result.reasoning)
+                    context.messagesDB.insertOrUpdate(updatedMessage)
+
                     context.showReceivedMessageNotification(
                         messageId = newMessageId,
                         address = address,
@@ -159,9 +164,10 @@ class SmsReceiver : BroadcastReceiver() {
                         threadId = threadId,
                         bitmap = bitmap
                     )
-                }else{
-                    // If the message is classified as spam or irrelevant, you might choose not to show a notification.
-                    // You can also consider marking the message in a certain way in the database if needed.
+                } else if(result != null) {
+                    // Message classified as spam or irrelevant, update reasoning but don't show notification
+                    val updatedMessage = message.copy(aiNotificationReasoning = result.reasoning)
+                    context.messagesDB.insertOrUpdate(updatedMessage)
                 }
 
             }

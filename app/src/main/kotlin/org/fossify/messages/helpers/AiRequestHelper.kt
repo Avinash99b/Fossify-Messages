@@ -1,14 +1,17 @@
 package org.fossify.messages.helpers
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import com.androidnetworking.AndroidNetworking
 import com.androidnetworking.error.ANError
 import org.fossify.messages.models.LLMClassificationResult
 
 object AiRequestHelper {
+    private val TAG = "AiRequestHelper"
+
     private val promptStart = """
-You are a message classification AI.
+You are a message classification AI specialized in spam and irrelevance detection.
 
 Your task is to analyze a given message and classify it into one of the following categories:
 - normal (legitimate, meaningful message)
@@ -20,21 +23,24 @@ You must respond ONLY in valid JSON format with no extra text.
 Output format:
 {
   "notify": boolean,
-  "category": "normal" | "spam" | "irrelevant"
+  "category": "normal" | "spam" | "irrelevant",
+  "reasoning": "brief explanation of why you made this decision"
 }
 
 Rules:
 - Set "notify" to true only if the message is important or requires user attention.
 - Set "notify" to false for spam or irrelevant messages.
-- Do not include explanations, comments, or additional fields.
+- Provide a brief but clear reasoning explaining your classification decision (max 100 characters).
+- Include explanations that help understand why the message should or should not notify.
+- Do not include explanations other than in the reasoning field.
 - Ensure the JSON is strictly valid.
 
 Now classify the following message:
 """
 
-
-    fun getFullPrompt(senderName: String, message: String): String {
-        val prompt = promptStart + "\nSender: $senderName\nMessage: $message\n"
+    fun getFullPrompt(senderName: String, message: String, customPrompt: String? = null): String {
+        val basePrompt = customPrompt ?: promptStart
+        val prompt = basePrompt + "\nSender: $senderName\nMessage: $message\n"
         return prompt
     }
 
@@ -44,14 +50,17 @@ Now classify the following message:
         message: String,
         onResult: (result: LLMClassificationResult?) -> Unit
     ) {
-        val prompt = getFullPrompt(senderName, message)
-
         val aiConfigProvider = AiConfigProvider(context)
+        val customPrompt = aiConfigProvider.customPrompt
+        val prompt = getFullPrompt(senderName, message, customPrompt)
+
         val apiKey = aiConfigProvider.apiKey ?: run {
+            logAiDecision(context, senderName, message, false, "No API key configured", "")
             onResult(null)
             return
         }
         val modelName = aiConfigProvider.model ?: run {
+            logAiDecision(context, senderName, message, false, "No model configured", "")
             onResult(null)
             return
         }
@@ -99,6 +108,7 @@ Now classify the following message:
 
                         val notify = json.getBoolean("notify")
                         val categoryStr = json.getString("category")
+                        val reasoning = json.optString("reasoning", "")
 
                         val category = try {
                             LLMClassificationResult.Category.valueOf(categoryStr)
@@ -106,24 +116,47 @@ Now classify the following message:
                             LLMClassificationResult.Category.irrelevant
                         }
 
-                        onResult(
-                            LLMClassificationResult(
-                                notify = notify,
-                                category = category
-                            )
+                        val result = LLMClassificationResult(
+                            notify = notify,
+                            category = category,
+                            reasoning = reasoning
                         )
+
+                        // Log the decision
+                        logAiDecision(context, senderName, message, notify, reasoning, categoryStr)
+
+                        onResult(result)
 
                     } catch (e: Exception) {
                         e.printStackTrace()
+                        Log.e(TAG, "Error parsing AI response: ${e.message}")
+                        logAiDecision(context, senderName, message, false, "Error parsing response", "")
                         onResult(null)
                     }
                 }
 
                 override fun onError(anError: ANError) {
                     anError.printStackTrace()
+                    Log.e(TAG, "AI Request Error: ${anError.message}")
+                    logAiDecision(context, senderName, message, false, "API Error: ${anError.message}", "")
                     onResult(null)
                 }
             })
     }
 
+    private fun logAiDecision(
+        context: Context,
+        senderName: String,
+        message: String,
+        notify: Boolean,
+        reasoning: String,
+        category: String
+    ) {
+        val timestamp = System.currentTimeMillis()
+        val logEntry = "[$timestamp] From: $senderName | Notify: $notify | Category: $category | Reasoning: $reasoning"
+        Log.i(TAG, logEntry)
+
+        // You can extend this to write to a file or database for persistent logging
+        AiDecisionLogger.logDecision(context, senderName, message, notify, reasoning, category)
+    }
 }

@@ -52,6 +52,7 @@
     <string name="message_details_receiver">Receiver</string>
     <string name="message_details_sent_at">Sent at</string>
     <string name="message_details_received_at">Received at</string>
+    <string name="message_details_ai_reasoning">AI Notification Reasoning</string>
     <!-- Notifications -->
     <string name="channel_received_sms">Received SMS</string>
     <string name="new_message">New message</string>
@@ -144,4 +145,16 @@
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res
     -->
+    <!-- AI Configuration -->
+    <string name="ai_config_title">AI Configuration</string>
+    <string name="ai_config_subtitle">Customize your AI-powered message filtering (Gemini only)</string>
+    <string name="ai_config_api_section">API Configuration</string>
+    <string name="ai_config_model_hint">Model Name (e.g., gemini-1.5-flash)</string>
+    <string name="ai_config_api_key_hint">API Key</string>
+    <string name="ai_config_prompt_section">Classification Prompt</string>
+    <string name="ai_config_reset_prompt">Reset to Default</string>
+    <string name="ai_config_prompt_info">Customize the prompt used to classify messages. Reset to default if needed.</string>
+    <string name="ai_config_prompt_hint">Enter your custom classification prompt</string>
+    <string name="ai_config_save">Save Configuration</string>
+    <string name="ai_config_clear">Clear All Data</string>
 </resources>
