@@ -135,8 +135,16 @@ class MmsReceiver : MmsReceivedReceiver() {
                 val classification = result.classification
                 val category = classification.category.wireName
                 val reasoning = classification.reasoning
+                // Incoming MMS is not cached in the app database yet, so an UPDATE would match
+                // zero rows. Insert the provider message with its classification instead; the
+                // provider-id primary key makes this idempotent with the later cache sync.
                 runCatching {
-                    context.messagesDB.updateAiClassification(mms.id, reasoning, category)
+                    context.messagesDB.insertOrUpdate(
+                        mms.copy(
+                            aiNotificationReasoning = reasoning,
+                            aiCategory = category
+                        )
+                    )
                 }
                 val status = if (classification.notify) {
                     AiDecisionLogger.STATUS_NOTIFIED

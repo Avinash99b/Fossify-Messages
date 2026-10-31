@@ -33,6 +33,9 @@ ez-vcard = "0.12.2"
 #Tests
 junit = "4.13.2"
 json = "20240303"
+robolectric = "4.14.1"
+androidx-test-core = "1.6.1"
+androidx-test-junit = "1.2.1"
 [libraries]
 #AndroidX
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
@@ -57,6 +60,9 @@ ez-vcard = { module = "com.googlecode.ez-vcard:ez-vcard", version.ref = "ez-vcar
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 junit = { module = "junit:junit", version.ref = "junit" }
 json = { module = "org.json:json", version.ref = "json" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
+androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-junit" }
 [bundles]
 room = [
     "androidx-room-ktx",
