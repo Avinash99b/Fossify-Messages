@@ -19,6 +19,7 @@ data class Conversation(
     @ColumnInfo(name = "uses_custom_title") var usesCustomTitle: Boolean = false,
     @ColumnInfo(name = "archived") var isArchived: Boolean = false,
     @ColumnInfo(name = "unread_count") var unreadCount: Int = 0,
+    @ColumnInfo(name = "ai_category") var aiCategory: String = "",
 ) {
 
     companion object {
@@ -34,7 +35,8 @@ data class Conversation(
                 old.photoUri == new.photoUri &&
                 old.isGroupConversation == new.isGroupConversation &&
                 old.phoneNumber == new.phoneNumber &&
-                old.unreadCount == new.unreadCount
+                old.unreadCount == new.unreadCount &&
+                old.aiCategory == new.aiCategory
         }
     }
 }

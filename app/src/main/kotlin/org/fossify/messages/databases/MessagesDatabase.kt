@@ -30,7 +30,7 @@ import org.fossify.messages.models.RecycleBinMessage
         RecycleBinMessage::class,
         Draft::class
     ],
-    version = 11
+    version = 12
 )
 @TypeConverters(Converters::class)
 abstract class MessagesDatabase : RoomDatabase() {
@@ -68,11 +68,12 @@ abstract class MessagesDatabase : RoomDatabase() {
                             .addMigrations(MIGRATION_8_9)
                             .addMigrations(MIGRATION_9_10)
                             .addMigrations(MIGRATION_10_11)
+                            .addMigrations(MIGRATION_11_12)
                             .build()
                     }
                 }
             }
-            return db!!
+            return checkNotNull(db)
         }
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -171,6 +172,21 @@ abstract class MessagesDatabase : RoomDatabase() {
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS `index_messages_thread_id_date` " +
                         "ON `messages` (`thread_id`, `date`)"
+                )
+            }
+        }
+
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE messages ADD COLUMN " +
+                        "ai_notification_reasoning TEXT NOT NULL DEFAULT ''"
+                )
+                db.execSQL(
+                    "ALTER TABLE messages ADD COLUMN ai_category TEXT NOT NULL DEFAULT ''"
+                )
+                db.execSQL(
+                    "ALTER TABLE conversations ADD COLUMN ai_category TEXT NOT NULL DEFAULT ''"
                 )
             }
         }

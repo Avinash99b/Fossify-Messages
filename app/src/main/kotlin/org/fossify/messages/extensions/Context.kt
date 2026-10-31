@@ -134,6 +134,9 @@ fun Context.getMessages(
     val selection = "${Sms.THREAD_ID} = ? $rangeQuery"
     val selectionArgs = arrayOf(threadId.toString())
     val sortOrder = "${Sms.DATE} DESC LIMIT $limit"
+    val aiMetadata = runCatching {
+        messagesDB.getAiMetadataForThread(threadId).associateBy { it.id }
+    }.getOrDefault(emptyMap())
 
     val blockStatus = HashMap<String, Boolean>()
     val blockedNumbers = getBlockedNumbers()
@@ -189,7 +192,9 @@ fun Context.getMessages(
                 senderPhoneNumber = senderNumber,
                 senderName = senderName,
                 senderPhotoUri = photoUri,
-                subscriptionId = subscriptionId
+                subscriptionId = subscriptionId,
+                aiNotificationReasoning = aiMetadata[id]?.reasoning.orEmpty(),
+                aiCategory = aiMetadata[id]?.category.orEmpty()
             )
         messages.add(message)
     }
@@ -248,6 +253,13 @@ fun Context.getMMS(
 
     val messages = ArrayList<Message>()
     val contactsMap = HashMap<Int, SimpleContact>()
+    val aiMetadata = if (threadId != null) {
+        runCatching {
+            messagesDB.getAiMetadataForThread(threadId).associateBy { it.id }
+        }.getOrDefault(emptyMap())
+    } else {
+        emptyMap()
+    }
     queryCursor(uri, projection, selection, selectionArgs, sortOrder, showErrors = true) { cursor ->
         val mmsId = cursor.getLongValue(Mms._ID)
         val type = cursor.getIntValue(Mms.MESSAGE_BOX)
@@ -287,7 +299,9 @@ fun Context.getMMS(
                 senderPhoneNumber = senderNumber,
                 senderName = senderName,
                 senderPhotoUri = senderPhotoUri,
-                subscriptionId = subscriptionId
+                subscriptionId = subscriptionId,
+                aiNotificationReasoning = aiMetadata[mmsId]?.reasoning.orEmpty(),
+                aiCategory = aiMetadata[mmsId]?.category.orEmpty()
             )
         messages.add(message)
 
@@ -1067,6 +1081,7 @@ fun Context.showReceivedMessageNotification(
     body: String,
     threadId: Long,
     bitmap: Bitmap?,
+    otp: String = "",
 ) {
     Handler(Looper.getMainLooper()).post {
         notificationHelper.showMessageNotification(
@@ -1076,7 +1091,8 @@ fun Context.showReceivedMessageNotification(
             body = body,
             threadId = threadId,
             bitmap = bitmap,
-            sender = senderName
+            sender = senderName,
+            otp = otp
         )
     }
 }
@@ -1263,6 +1279,9 @@ fun Context.insertOrUpdateConversation(
             title = cachedConv.title,
             usesCustomTitle = true
         )
+    }
+    if (cachedConv != null && updatedConv.aiCategory.isBlank()) {
+        updatedConv = updatedConv.copy(aiCategory = cachedConv.aiCategory)
     }
     conversationsDB.insertOrUpdate(updatedConv)
 }

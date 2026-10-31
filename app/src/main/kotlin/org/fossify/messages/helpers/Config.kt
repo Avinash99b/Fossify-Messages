@@ -7,6 +7,9 @@ import org.fossify.messages.models.Conversation
 
 class Config(context: Context) : BaseConfig(context) {
     companion object {
+        private const val AI_CATEGORY_FILTER = "ai_category_filter"
+        private const val AI_CATEGORY_FILTER_ALL = "all"
+
         fun newInstance(context: Context) = Config(context)
     }
 
@@ -151,4 +154,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(KEEP_CONVERSATIONS_ARCHIVED, false)
         set(keepConversationsArchived) = prefs.edit()
             .putBoolean(KEEP_CONVERSATIONS_ARCHIVED, keepConversationsArchived).apply()
+
+    var aiCategoryFilter: String
+        get() = prefs.getString(AI_CATEGORY_FILTER, AI_CATEGORY_FILTER_ALL)
+            ?: AI_CATEGORY_FILTER_ALL
+        set(aiCategoryFilter) = prefs.edit()
+            .putString(AI_CATEGORY_FILTER, aiCategoryFilter).apply()
 }

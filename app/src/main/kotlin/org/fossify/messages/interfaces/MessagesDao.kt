@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import org.fossify.messages.models.AiMessageMetadata
 import org.fossify.messages.models.Message
 import org.fossify.messages.models.RecycleBinMessage
 
@@ -67,6 +68,12 @@ interface MessagesDao {
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateStatus(id: Long, status: Int): Int
+
+    @Query("UPDATE messages SET ai_notification_reasoning = :reasoning, ai_category = :category WHERE id = :id")
+    fun updateAiClassification(id: Long, reasoning: String, category: String)
+
+    @Query("SELECT id, ai_notification_reasoning, ai_category FROM messages WHERE thread_id = :threadId")
+    fun getAiMetadataForThread(threadId: Long): List<AiMessageMetadata>
 
     @Transaction
     fun delete(id: Long) {

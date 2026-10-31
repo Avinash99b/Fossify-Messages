@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="category_all">All</string>
+    <string name="category_personal">Personal</string>
+    <string name="category_otp">OTPs</string>
+    <string name="category_marketing">Marketing</string>
+    <string name="category_transaction">Transactions</string>
+    <string name="category_updates">Updates</string>
+    <string name="category_spam">Spam</string>
+</resources>

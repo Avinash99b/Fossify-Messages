@@ -99,6 +99,7 @@ class SettingsActivity : SimpleActivity() {
 
         setupCustomizeColors()
         setupCustomizeNotifications()
+        setupConfigAI()
         setupUseEnglish()
         setupLanguage()
         setupManageBlockedNumbers()
@@ -170,6 +171,16 @@ class SettingsActivity : SimpleActivity() {
         settingsCustomizeNotificationsHolder.setOnClickListener {
             launchCustomizeNotificationsIntent()
         }
+    }
+
+    private fun setupConfigAI() = binding.apply {
+        settingsAiConfigHolder.setOnClickListener {
+            launchAiConfigActivity()
+        }
+    }
+
+    private fun launchAiConfigActivity() {
+        startActivity(Intent(this, AiConfigActivity::class.java))
     }
 
     private fun setupUseEnglish() = binding.apply {

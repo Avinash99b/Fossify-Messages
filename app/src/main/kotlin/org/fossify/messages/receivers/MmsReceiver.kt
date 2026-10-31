@@ -12,14 +12,20 @@ import org.fossify.commons.helpers.ContactLookupResult
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.messages.R
+import org.fossify.messages.extensions.conversationsDB
 import org.fossify.messages.extensions.getConversations
 import org.fossify.messages.extensions.getMMS
 import org.fossify.messages.extensions.getLatestMMS
 import org.fossify.messages.extensions.getNameFromAddress
 import org.fossify.messages.extensions.insertOrUpdateConversation
+import org.fossify.messages.extensions.messagesDB
 import org.fossify.messages.extensions.shouldUnarchive
 import org.fossify.messages.extensions.showReceivedMessageNotification
 import org.fossify.messages.extensions.updateConversationArchivedStatus
+import org.fossify.messages.helpers.AiConfigProvider
+import org.fossify.messages.helpers.AiDecisionLogger
+import org.fossify.messages.helpers.AiRequestHelper
+import org.fossify.messages.helpers.AiResult
 import org.fossify.messages.helpers.ReceiverUtils.isMessageFilteredOut
 import org.fossify.messages.helpers.refreshConversations
 import org.fossify.messages.helpers.refreshMessages
@@ -66,14 +72,19 @@ class MmsReceiver : MmsReceivedReceiver() {
         size: Int,
         address: String
     ) {
-        val glideBitmap = try {
-            Glide.with(context)
-                .asBitmap()
-                .load(mms.attachment!!.attachments.first().getUri())
-                .centerCrop()
-                .into(size, size)
-                .get()
-        } catch (e: Exception) {
+        val attachment = mms.attachment
+        val glideBitmap = if (attachment != null && attachment.attachments.isNotEmpty()) {
+            try {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(attachment.attachments.first().getUri())
+                    .centerCrop()
+                    .into(size, size)
+                    .get()
+            } catch (e: Exception) {
+                null
+            }
+        } else {
             null
         }
 
@@ -82,22 +93,86 @@ class MmsReceiver : MmsReceivedReceiver() {
             context.getNameFromAddress(address, it)
         }
 
-        context.showReceivedMessageNotification(
-            messageId = mms.id,
-            isMms = true,
-            address = address,
-            senderName = senderName,
-            body = mms.body,
-            threadId = mms.threadId,
-            bitmap = glideBitmap
-        )
+        val decision = classifyMmsMessage(context, mms, senderName)
+
+        if (decision.notify) {
+            context.showReceivedMessageNotification(
+                messageId = mms.id,
+                isMms = true,
+                address = address,
+                senderName = senderName,
+                body = mms.body,
+                threadId = mms.threadId,
+                bitmap = glideBitmap,
+                otp = decision.otp
+            )
+        }
 
         val conversation = context.getConversations(mms.threadId).firstOrNull() ?: return
         runCatching { context.insertOrUpdateConversation(conversation) }
+        decision.category?.let { category ->
+            runCatching { context.conversationsDB.updateAiCategory(mms.threadId, category) }
+        }
         if (context.shouldUnarchive()) {
             context.updateConversationArchivedStatus(mms.threadId, false)
         }
         refreshMessages()
         refreshConversations()
     }
+
+    private fun classifyMmsMessage(
+        context: Context,
+        mms: Message,
+        senderName: String
+    ): MmsAiDecision {
+        val config = AiConfigProvider(context)
+        if (!config.isConfigured()) {
+            return MmsAiDecision(notify = true, otp = "", category = null)
+        }
+
+        return when (val result = AiRequestHelper.classify(context, senderName, mms.body)) {
+            is AiResult.Classified -> {
+                val classification = result.classification
+                val category = classification.category.wireName
+                val reasoning = classification.reasoning
+                runCatching {
+                    context.messagesDB.updateAiClassification(mms.id, reasoning, category)
+                }
+                val status = if (classification.notify) {
+                    AiDecisionLogger.STATUS_NOTIFIED
+                } else {
+                    AiDecisionLogger.STATUS_SUPPRESSED
+                }
+                AiDecisionLogger.logDecision(
+                    context = context,
+                    senderName = senderName,
+                    messagePreview = mms.body,
+                    notify = classification.notify,
+                    reasoning = reasoning,
+                    category = category,
+                    status = status
+                )
+                MmsAiDecision(classification.notify, classification.otp, category)
+            }
+
+            is AiResult.Failure -> {
+                AiDecisionLogger.logDecision(
+                    context = context,
+                    senderName = senderName,
+                    messagePreview = mms.body,
+                    notify = true,
+                    reasoning = result.reason,
+                    category = "",
+                    status = AiDecisionLogger.STATUS_ERROR
+                )
+                MmsAiDecision(notify = true, otp = "", category = null)
+            }
+        }
+    }
+
+    private data class MmsAiDecision(
+        val notify: Boolean,
+        val otp: String,
+        val category: String?
+    )
 }
