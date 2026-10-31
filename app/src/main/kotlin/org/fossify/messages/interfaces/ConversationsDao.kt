@@ -54,6 +54,9 @@ interface ConversationsDao {
     @Query("UPDATE conversations SET archived = 0 WHERE thread_id = :threadId")
     fun unarchive(threadId: Long)
 
+    @Query("UPDATE conversations SET ai_category = :category WHERE thread_id = :threadId")
+    fun updateAiCategory(threadId: Long, category: String)
+
     @Query("DELETE FROM conversations WHERE thread_id = :threadId")
     fun deleteThreadId(threadId: Long)
 }

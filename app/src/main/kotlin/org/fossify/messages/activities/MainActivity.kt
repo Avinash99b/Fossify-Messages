@@ -10,7 +10,9 @@ import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.provider.Telephony
 import android.text.TextUtils
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import com.google.android.material.button.MaterialButtonToggleGroup
 import org.fossify.commons.dialogs.PermissionRequiredDialog
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.appLaunched
@@ -66,6 +68,7 @@ import org.fossify.messages.extensions.messagesDB
 import org.fossify.messages.helpers.SEARCHED_MESSAGE_ID
 import org.fossify.messages.helpers.THREAD_ID
 import org.fossify.messages.helpers.THREAD_TITLE
+import org.fossify.messages.models.AiCategory
 import org.fossify.messages.models.Conversation
 import org.fossify.messages.models.Events
 import org.fossify.messages.models.Message
@@ -76,13 +79,18 @@ import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : SimpleActivity() {
     override var isSearchBarEnabled = true
-    
+
+    private companion object {
+        private const val CATEGORY_FILTER_ALL = "all"
+    }
+
     private val MAKE_DEFAULT_APP_REQUEST = 1
 
     private var storedTextColor = 0
     private var storedFontSize = 0
     private var lastSearchedText = ""
     private var bus: EventBus? = null
+    private var selectedCategoryFilter: String = "all"
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
@@ -276,6 +284,7 @@ class MainActivity : SimpleActivity() {
     private fun initMessenger() {
         checkWhatsNewDialog()
         storeStateVariables()
+        setupCategoryFilters()
         getCachedConversations()
         binding.noConversationsPlaceholder2.setOnClickListener {
             launchNewConversation()
@@ -284,6 +293,53 @@ class MainActivity : SimpleActivity() {
         binding.conversationsFab.setOnClickListener {
             launchNewConversation()
         }
+    }
+
+    private fun setupCategoryFilters() {
+        selectedCategoryFilter = config.aiCategoryFilter
+        binding.categoryFilterGroup.check(getCategoryFilterButtonId(selectedCategoryFilter))
+        binding.categoryFilterGroup.addOnButtonCheckedListener { group, _, _ ->
+            // Wait for the toggle group to settle before reading its checked button, so switching
+            // filters does not briefly apply an intermediate "all" filter.
+            group.post { updateCategoryFilter(group) }
+        }
+    }
+
+    private fun updateCategoryFilter(group: MaterialButtonToggleGroup) {
+        val checkedId = group.checkedButtonId
+        val filter = if (checkedId == View.NO_ID) {
+            CATEGORY_FILTER_ALL
+        } else {
+            getCategoryFilterWireName(checkedId)
+        }
+
+        if (filter == selectedCategoryFilter) {
+            return
+        }
+
+        selectedCategoryFilter = filter
+        config.aiCategoryFilter = filter
+        getCachedConversations()
+    }
+
+    private fun getCategoryFilterButtonId(filter: String): Int = when (filter) {
+        AiCategory.Personal.wireName -> R.id.filter_personal
+        AiCategory.Otp.wireName -> R.id.filter_otp
+        AiCategory.Marketing.wireName -> R.id.filter_marketing
+        AiCategory.Transaction.wireName -> R.id.filter_transaction
+        AiCategory.Updates.wireName -> R.id.filter_updates
+        AiCategory.Spam.wireName -> R.id.filter_spam
+        else -> R.id.filter_all
+    }
+
+    private fun getCategoryFilterWireName(buttonId: Int): String = when (buttonId) {
+        R.id.filter_personal -> AiCategory.Personal.wireName
+        R.id.filter_otp -> AiCategory.Otp.wireName
+        R.id.filter_marketing -> AiCategory.Marketing.wireName
+        R.id.filter_transaction -> AiCategory.Transaction.wireName
+        R.id.filter_updates -> AiCategory.Updates.wireName
+        R.id.filter_spam -> AiCategory.Spam.wireName
+        else -> CATEGORY_FILTER_ALL
     }
 
     private fun getCachedConversations() {
@@ -403,7 +459,15 @@ class MainActivity : SimpleActivity() {
         conversations: ArrayList<Conversation>,
         cached: Boolean = false,
     ) {
-        val sortedConversations = conversations
+        val filteredConversations = if (selectedCategoryFilter == CATEGORY_FILTER_ALL) {
+            conversations
+        } else {
+            ArrayList(conversations.filter { conversation ->
+                AiCategory.matching(conversation.aiCategory)?.wireName == selectedCategoryFilter
+            })
+        }
+
+        val sortedConversations = filteredConversations
             .sortedWith(
                 compareByDescending<Conversation> {
                     config.pinnedConversations.contains(it.threadId.toString())
@@ -416,7 +480,7 @@ class MainActivity : SimpleActivity() {
             showOrHideProgress(conversations.isEmpty())
         } else {
             showOrHideProgress(false)
-            showOrHidePlaceholder(conversations.isEmpty())
+            showOrHidePlaceholder(filteredConversations.isEmpty())
         }
 
         try {

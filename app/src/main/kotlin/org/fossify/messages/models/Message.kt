@@ -29,7 +29,9 @@ data class Message(
     @ColumnInfo(name = "sender_name") var senderName: String,
     @ColumnInfo(name = "sender_photo_uri") val senderPhotoUri: String,
     @ColumnInfo(name = "subscription_id") var subscriptionId: Int,
-    @ColumnInfo(name = "is_scheduled") var isScheduled: Boolean = false
+    @ColumnInfo(name = "is_scheduled") var isScheduled: Boolean = false,
+    @ColumnInfo(name = "ai_notification_reasoning") val aiNotificationReasoning: String = "",
+    @ColumnInfo(name = "ai_category") val aiCategory: String = ""
 ) : ThreadItem() {
 
     fun isReceivedMessage() = type == Telephony.Sms.MESSAGE_TYPE_INBOX
@@ -66,7 +68,9 @@ data class Message(
                 old.senderPhoneNumber == new.senderPhoneNumber &&
                 old.senderName == new.senderName &&
                 old.senderPhotoUri == new.senderPhotoUri &&
-                old.isScheduled == new.isScheduled
+                old.isScheduled == new.isScheduled &&
+                old.aiNotificationReasoning == new.aiNotificationReasoning &&
+                old.aiCategory == new.aiCategory
         }
     }
 }

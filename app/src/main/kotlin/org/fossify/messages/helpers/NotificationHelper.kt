@@ -23,6 +23,7 @@ import org.fossify.messages.activities.ThreadActivity
 import org.fossify.messages.extensions.config
 import org.fossify.messages.extensions.shortcutHelper
 import org.fossify.messages.messaging.isShortCodeWithLetters
+import org.fossify.messages.receivers.CopyOtpReceiver
 import org.fossify.messages.receivers.DeleteSmsReceiver
 import org.fossify.messages.receivers.DirectReplyReceiver
 import org.fossify.messages.receivers.MarkAsReadReceiver
@@ -36,6 +37,7 @@ class NotificationHelper(private val context: Context) {
         .build()
 
     @SuppressLint("NewApi")
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     fun showMessageNotification(
         messageId: Long,
         isMms: Boolean,
@@ -44,7 +46,8 @@ class NotificationHelper(private val context: Context) {
         threadId: Long,
         bitmap: Bitmap?,
         sender: String?,
-        alertOnlyOnce: Boolean = false
+        alertOnlyOnce: Boolean = false,
+        otp: String = ""
     ) {
         val hasCustomNotifications =
             context.config.customNotifications.contains(threadId.toString())
@@ -90,6 +93,22 @@ class NotificationHelper(private val context: Context) {
                 deleteSmsIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+
+        val copyOtpPendingIntent = if (otp.isNotBlank()) {
+            val copyOtpIntent = Intent(context, CopyOtpReceiver::class.java).apply {
+                action = COPY_OTP
+                putExtra(OTP_VALUE, otp)
+                putExtra(NOTIFICATION_ID, notificationId)
+            }
+            PendingIntent.getBroadcast(
+                context.applicationContext,
+                notificationId + COPY_OTP_REQUEST_CODE_OFFSET,
+                copyOtpIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        } else {
+            null
+        }
 
         var replyAction: NotificationCompat.Action? = null
         val isNoReplySms = isShortCodeWithLetters(address)
@@ -168,6 +187,13 @@ class NotificationHelper(private val context: Context) {
                 org.fossify.commons.R.drawable.ic_delete_vector,
                 context.getString(org.fossify.commons.R.string.delete),
                 deleteSmsPendingIntent
+            ).setChannelId(notificationChannelId)
+        }
+        if (copyOtpPendingIntent != null) {
+            builder.addAction(
+                org.fossify.commons.R.drawable.ic_copy_vector,
+                context.getString(org.fossify.messages.R.string.copy_otp),
+                copyOtpPendingIntent
             ).setChannelId(notificationChannelId)
         }
 
@@ -283,5 +309,9 @@ class NotificationHelper(private val context: Context) {
         } else {
             emptyList()
         }
+    }
+
+    private companion object {
+        const val COPY_OTP_REQUEST_CODE_OFFSET = 1_000_003
     }
 }

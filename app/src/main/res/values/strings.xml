@@ -183,6 +183,52 @@
     <string name="faq_4_text">You need to enable \"Send group messages as MMS\" in the app settings. This will ensure that group messages are sent as proper MMS, allowing all participants to see each other\'s replies.</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
+    <!-- AI configuration -->
+    <string name="ai_configuration">AI configuration</string>
+    <string name="settings_ai_config_label">AI configuration</string>
+    <string name="ai_config_section_backend">Provider</string>
+    <string name="ai_config_section_prompt">Classification prompt</string>
+    <string name="ai_config_section_actions">Actions</string>
+    <string name="ai_config_provider_label">Provider</string>
+    <string name="ai_provider_gemini">Gemini</string>
+    <string name="ai_provider_openai">OpenAI</string>
+    <string name="ai_provider_other">Other (OpenAI-compatible)</string>
+    <string name="ai_config_custom_endpoint_label">Custom endpoint URL</string>
+    <string name="ai_config_custom_endpoint_helper">Must start with https:// and include a host</string>
+    <string name="ai_config_model_label">Model name</string>
+    <string name="ai_config_api_key_label">API key</string>
+    <string name="ai_config_prompt_label">Prompt</string>
+    <string name="ai_config_prompt_helper">Keep the JSON response contract intact.</string>
+    <string name="ai_privacy_notice">When enabled, messages go to your configured third-party AI provider.</string>
+    <string name="ai_save">Save</string>
+    <string name="ai_reset_prompt">Reset prompt</string>
+    <string name="ai_logs">AI logs</string>
+    <string name="ai_clear_all">Clear all</string>
+    <string name="ai_close">Close</string>
+    <string name="ai_error_model_required">Enter a model name</string>
+    <string name="ai_error_api_key_required">Enter an API key</string>
+    <string name="ai_error_endpoint_invalid">Enter a valid HTTPS endpoint with a host</string>
+    <string name="ai_config_saved">AI configuration saved</string>
+    <string name="ai_config_incomplete">AI configuration is incomplete</string>
+    <string name="ai_prompt_reset">Prompt reset to the default</string>
+    <string name="ai_config_cleared">AI configuration and logs cleared</string>
+    <string name="ai_logs_title">AI logs</string>
+    <string name="ai_logs_empty">No AI decisions have been logged yet.</string>
+    <string name="ai_logs_clear">Clear logs</string>
+    <string name="ai_logs_cleared">AI logs cleared</string>
+    <string name="ai_log_timestamp">Time: %1$s</string>
+    <string name="ai_log_sender">Sender: %1$s</string>
+    <string name="ai_log_status">Status: %1$s</string>
+    <string name="ai_log_category">Category: %1$s</string>
+    <string name="ai_log_notify">Notify: %1$s</string>
+    <string name="ai_log_reasoning">Reasoning: %1$s</string>
+    <string name="ai_log_preview">Preview: %1$s</string>
+    <string name="ai_log_notify_true">Yes</string>
+    <string name="ai_log_notify_false">No</string>
+    <string name="ai_log_unknown">Unknown</string>
+    <string name="ai_log_none">None</string>
+    <string name="otp_copied">One-time password copied</string>
+    <string name="copy_otp">Copy OTP</string>
     <!--
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res

@@ -139,8 +139,18 @@ detekt {
     allRules = false
 }
 
+// Material 1.14.0 ships a Material3Expressive style with an invalid buttonGravity value that
+// AAPT2 rejects with AGP 9.4.x. Pin the last good release until upstream fixes it.
+configurations.configureEach {
+    resolutionStrategy.force("com.google.android.material:material:1.13.0")
+}
+
 dependencies {
-    implementation(libs.fossify.commons)
+    implementation(libs.fossify.commons) {
+        // commons pulls a legacy support-v4 graph via patternLockView; AndroidX already provides
+        // the same classes and the release duplicate-class check rejects both.
+        exclude(group = "com.android.support")
+    }
     implementation(libs.eventbus)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.mmslib)
@@ -153,4 +163,7 @@ dependencies {
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
     detektPlugins(libs.compose.detekt)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

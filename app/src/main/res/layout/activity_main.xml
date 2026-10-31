@@ -41,10 +41,108 @@
                     app:showDelay="250"
                     tools:visibility="visible" />
 
+                <HorizontalScrollView
+                    android:id="@+id/category_filter_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/conversations_progress_bar"
+                    android:fillViewport="false"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/category_filter_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="@dimen/small_margin"
+                        android:paddingEnd="@dimen/small_margin"
+                        app:selectionRequired="false"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_all"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_all"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_personal"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_personal"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_otp"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_otp"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_marketing"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_marketing"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_transaction"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_transaction"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_updates"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_updates"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/filter_spam"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/small_margin"
+                            android:layout_marginEnd="@dimen/small_margin"
+                            android:minWidth="0dp"
+                            android:text="@string/category_spam"
+                            android:textSize="@dimen/smaller_text_size" />
+
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+                </HorizontalScrollView>
+
                 <org.fossify.commons.views.MyTextView
                     android:id="@+id/no_conversations_placeholder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@id/category_filter_scroll"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="@dimen/bigger_margin"
                     android:alpha="0.8"
@@ -72,7 +170,8 @@
                 <com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
                     android:id="@+id/conversations_fastscroller"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/category_filter_scroll">
 
                     <org.fossify.commons.views.MyRecyclerView
                         android:id="@+id/conversations_list"

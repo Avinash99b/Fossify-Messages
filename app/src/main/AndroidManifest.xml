@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission
@@ -33,6 +34,8 @@
         android:name=".App"
         android:allowBackup="true"
         android:appCategory="productivity"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_launcher_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -116,6 +119,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activities.AiConfigActivity"
+            android:configChanges="orientation"
+            android:exported="false"
+            android:label="@string/ai_configuration"
+            android:parentActivityName=".activities.SettingsActivity" />
 
         <activity
             android:name="org.fossify.commons.activities.AboutActivity"
@@ -215,6 +225,10 @@
         <receiver
             android:name=".receivers.MarkAsReadReceiver"
             android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".receivers.CopyOtpReceiver"
             android:exported="false" />
 
         <receiver
