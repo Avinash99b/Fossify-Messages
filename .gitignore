@@ -11,3 +11,6 @@ keystore.properties
 fastlane/fastlane.json
 fastlane/report.xml
 .kotlin/
+
+# Local signed release artifacts
+dist/
