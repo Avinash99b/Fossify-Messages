@@ -409,8 +409,12 @@ class MainActivity : SimpleActivity() {
 
             cachedConversations.forEach { cachedConv ->
                 val conv = conversations.find {
+                    // Telephony does not know about the locally stored AI category, so compare
+                    // against a copy carrying the cached value to avoid rewriting every
+                    // categorized conversation on each sync.
+                    val providerConv = it.copy(aiCategory = cachedConv.aiCategory)
                     it.threadId == cachedConv.threadId && !Conversation.areContentsTheSame(
-                        old = cachedConv, new = it
+                        old = cachedConv, new = providerConv
                     )
                 }
                 if (conv != null) {

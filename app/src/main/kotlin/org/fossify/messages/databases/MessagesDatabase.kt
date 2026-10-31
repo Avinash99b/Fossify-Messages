@@ -176,19 +176,43 @@ abstract class MessagesDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_11_12 = object : Migration(11, 12) {
+        internal val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE messages ADD COLUMN " +
-                        "ai_notification_reasoning TEXT NOT NULL DEFAULT ''"
+                // Idempotent because early builds of the AI branch shipped these columns while
+                // still reporting schema version 11. Real upstream v11 databases do not have
+                // them, so both paths must end in the same schema.
+                db.addColumnIfMissing(
+                    table = "messages",
+                    column = "ai_notification_reasoning",
+                    definition = "TEXT NOT NULL DEFAULT ''"
                 )
-                db.execSQL(
-                    "ALTER TABLE messages ADD COLUMN ai_category TEXT NOT NULL DEFAULT ''"
+                db.addColumnIfMissing(
+                    table = "messages",
+                    column = "ai_category",
+                    definition = "TEXT NOT NULL DEFAULT ''"
                 )
-                db.execSQL(
-                    "ALTER TABLE conversations ADD COLUMN ai_category TEXT NOT NULL DEFAULT ''"
+                db.addColumnIfMissing(
+                    table = "conversations",
+                    column = "ai_category",
+                    definition = "TEXT NOT NULL DEFAULT ''"
                 )
             }
+        }
+
+        private fun SupportSQLiteDatabase.addColumnIfMissing(
+            table: String,
+            column: String,
+            definition: String,
+        ) {
+            query("PRAGMA table_info(`$table`)").use { cursor ->
+                val nameIndex = cursor.getColumnIndexOrThrow("name")
+                while (cursor.moveToNext()) {
+                    if (cursor.getString(nameIndex) == column) {
+                        return
+                    }
+                }
+            }
+            execSQL("ALTER TABLE `$table` ADD COLUMN `$column` $definition")
         }
     }
 }
