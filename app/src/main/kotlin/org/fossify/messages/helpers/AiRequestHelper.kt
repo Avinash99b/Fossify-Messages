@@ -66,16 +66,35 @@ object AiRequestHelper {
             return AiResult.Failure(REASON_NOT_CONFIGURED)
         }
         val key = config.apiKey
-        return try {
-            val prompt = buildFullPrompt(config.customPrompt, senderName, message)
-            val request = buildRequest(config.provider, config.model, config.customEndpoint, key, prompt)
-            when (val response = sendRequest(request)) {
-                is AiHttpResponse.Success -> parseResponse(config.provider, response.body)
-                is AiHttpResponse.Error -> AiResult.Failure("HTTP ${response.code}")
+        val maxAttempts = 4
+        var lastFailure: AiResult.Failure? = null
+
+        val prompt = buildFullPrompt(config.customPrompt, senderName, message)
+        val request = buildRequest(config.provider, config.model, config.customEndpoint, key, prompt)
+
+        for (attempt in 1..maxAttempts) {
+            try {
+                when (val response = sendRequest(request)) {
+                    is AiHttpResponse.Success -> {
+                        val result = parseResponse(config.provider, response.body)
+                        if (result is AiResult.Classified) {
+                            return result
+                        }
+                        lastFailure = if (result is AiResult.Failure) result else AiResult.Failure(REASON_UNPARSEABLE)
+                    }
+                    is AiHttpResponse.Error -> {
+                        lastFailure = AiResult.Failure("HTTP ${response.code}")
+                    }
+                }
+            } catch (e: Exception) {
+                lastFailure = AiResult.Failure(sanitizeMessage(e.message, key))
             }
-        } catch (e: Exception) {
-            AiResult.Failure(sanitizeMessage(e.message, key))
+            if (attempt < maxAttempts) {
+                Thread.sleep(1000)
+            }
         }
+
+        return lastFailure ?: AiResult.Failure(REASON_REQUEST_FAILED)
     }
 
     /**
