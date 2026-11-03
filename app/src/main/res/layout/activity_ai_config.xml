@@ -69,12 +69,12 @@
                     android:visibility="gone">
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/customEndpointLayout"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/normal_margin"
-                        android:hint="@string/ai_config_custom_endpoint_label"
-                        app:helperText="@string/ai_config_custom_endpoint_helper">
+                        android:hint="@string/ai_config_custom_endpoint_label">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/customEndpointInput"
@@ -88,6 +88,7 @@
                 </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/modelNameLayout"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -104,6 +105,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/apiKeyLayout"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

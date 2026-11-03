@@ -193,10 +193,14 @@
     <string name="ai_provider_gemini">Gemini</string>
     <string name="ai_provider_openai">OpenAI</string>
     <string name="ai_provider_other">Other (OpenAI-compatible)</string>
+    <string name="ai_provider_decide">Decisions API</string>
     <string name="ai_config_custom_endpoint_label">Custom endpoint URL</string>
     <string name="ai_config_custom_endpoint_helper">Must start with https:// and include a host</string>
+    <string name="ai_config_decide_endpoint_helper">Leave blank to use the default Decisions endpoint, or enter another HTTPS endpoint.</string>
     <string name="ai_config_model_label">Model name</string>
+    <string name="ai_config_decide_model_helper">Optional decide model (clef, nimble, tev1). Falls back to built-in rules if unavailable.</string>
     <string name="ai_config_api_key_label">API key</string>
+    <string name="ai_config_api_key_optional">Optional for the free Decisions endpoint</string>
     <string name="ai_config_prompt_label">Prompt</string>
     <string name="ai_config_prompt_helper">Keep the JSON response contract intact.</string>
     <string name="ai_privacy_notice">When enabled, messages go to your configured third-party AI provider.</string>

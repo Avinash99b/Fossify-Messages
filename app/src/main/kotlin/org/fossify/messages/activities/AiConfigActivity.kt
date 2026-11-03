@@ -28,6 +28,7 @@ class AiConfigActivity : SimpleActivity() {
         AiConfigProvider.PROVIDER_GEMINI,
         AiConfigProvider.PROVIDER_OPENAI,
         AiConfigProvider.PROVIDER_OTHER,
+        AiConfigProvider.PROVIDER_DECIDE,
     )
 
     private val providerLabels by lazy {
@@ -35,6 +36,7 @@ class AiConfigActivity : SimpleActivity() {
             getString(R.string.ai_provider_gemini),
             getString(R.string.ai_provider_openai),
             getString(R.string.ai_provider_other),
+            getString(R.string.ai_provider_decide),
         )
     }
 
@@ -75,18 +77,36 @@ class AiConfigActivity : SimpleActivity() {
         binding.modelNameInput.setText(config.model)
         binding.apiKeyInput.setText(config.apiKey)
         binding.promptInput.setText(config.customPrompt)
-        updateCustomEndpointVisibility()
+        updateProviderVisibility()
     }
 
     private fun selectProvider(provider: String) {
         selectedProvider = provider
-        updateCustomEndpointVisibility()
+        updateProviderVisibility()
     }
 
-    private fun updateCustomEndpointVisibility() {
-        binding.customEndpointHolder.beVisibleIf(
-            selectedProvider == AiConfigProvider.PROVIDER_OTHER
+    private fun updateProviderVisibility() {
+        val isDecide = selectedProvider == AiConfigProvider.PROVIDER_DECIDE
+        val usesCustomEndpoint = selectedProvider == AiConfigProvider.PROVIDER_OTHER || isDecide
+        binding.customEndpointHolder.beVisibleIf(usesCustomEndpoint)
+
+        binding.customEndpointLayout.helperText = getString(
+            if (isDecide) {
+                R.string.ai_config_decide_endpoint_helper
+            } else {
+                R.string.ai_config_custom_endpoint_helper
+            }
         )
+        binding.modelNameLayout.helperText = if (isDecide) {
+            getString(R.string.ai_config_decide_model_helper)
+        } else {
+            null
+        }
+        binding.apiKeyLayout.helperText = if (isDecide) {
+            getString(R.string.ai_config_api_key_optional)
+        } else {
+            null
+        }
     }
 
     private fun saveConfiguration() {
@@ -95,15 +115,18 @@ class AiConfigActivity : SimpleActivity() {
         val apiKey = binding.apiKeyInput.text?.toString()?.trim().orEmpty()
         val prompt = binding.promptInput.text?.toString()?.trim().orEmpty()
 
-        if (model.isEmpty()) {
+        val isDecide = selectedProvider == AiConfigProvider.PROVIDER_DECIDE
+        if (!isDecide && model.isEmpty()) {
             toast(R.string.ai_error_model_required)
             return
         }
-        if (apiKey.isEmpty()) {
+        if (!isDecide && apiKey.isEmpty()) {
             toast(R.string.ai_error_api_key_required)
             return
         }
-        if (selectedProvider == AiConfigProvider.PROVIDER_OTHER && !isValidHttpsEndpoint(endpoint)) {
+        val endpointRequired = selectedProvider == AiConfigProvider.PROVIDER_OTHER ||
+            (isDecide && endpoint.isNotEmpty())
+        if (endpointRequired && !isValidHttpsEndpoint(endpoint)) {
             toast(R.string.ai_error_endpoint_invalid)
             return
         }
@@ -137,7 +160,7 @@ class AiConfigActivity : SimpleActivity() {
         binding.modelNameInput.setText("")
         binding.apiKeyInput.setText("")
         binding.promptInput.setText(AiRequestHelper.defaultPrompt())
-        updateCustomEndpointVisibility()
+        updateProviderVisibility()
         toast(R.string.ai_config_cleared)
     }
 

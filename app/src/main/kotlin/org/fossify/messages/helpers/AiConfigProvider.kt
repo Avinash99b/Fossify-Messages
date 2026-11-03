@@ -30,6 +30,14 @@ class AiConfigProvider(context: Context) {
         get() = prefs.getString(KEY_CUSTOM_ENDPOINT, "") ?: ""
         set(value) = prefs.edit().putString(KEY_CUSTOM_ENDPOINT, value).apply()
 
+    /** Endpoint used by the "decide" provider, falling back to [DEFAULT_DECIDE_ENDPOINT]. */
+    val decideEndpoint: String
+        get() = customEndpoint.ifBlank { DEFAULT_DECIDE_ENDPOINT }
+
+    /** Decide model used by the "decide" provider, falling back to [DEFAULT_DECIDE_MODEL]. */
+    val decideModel: String
+        get() = model.ifBlank { DEFAULT_DECIDE_MODEL }
+
     /** Returns the stored prompt, or [DEFAULT_AI_PROMPT] when none was saved (without writing it). */
     var customPrompt: String
         get() {
@@ -38,7 +46,16 @@ class AiConfigProvider(context: Context) {
         }
         set(value) = prefs.edit().putString(KEY_CUSTOM_PROMPT, value).apply()
 
+    /**
+     * Returns whether the provider has enough configuration to run a request.
+     *
+     * The "decide" provider needs neither an API key nor a model; a custom endpoint, when set, must
+     * still be a valid HTTPS URL. All other providers require an API key and a model.
+     */
     fun isConfigured(): Boolean {
+        if (provider.equals(PROVIDER_DECIDE, ignoreCase = true)) {
+            return customEndpoint.isBlank() || isValidHttpsUrl(customEndpoint)
+        }
         if (apiKey.isBlank() || model.isBlank()) return false
         val usesCustomProvider = provider.equals(PROVIDER_OTHER, ignoreCase = true)
         return !usesCustomProvider || isValidHttpsUrl(customEndpoint)
@@ -64,6 +81,13 @@ class AiConfigProvider(context: Context) {
         const val PROVIDER_GEMINI = "gemini"
         const val PROVIDER_OPENAI = "openai"
         const val PROVIDER_OTHER = "other"
+        const val PROVIDER_DECIDE = "decide"
+
+        /** Endpoint of the free public decide service (no API key required). */
+        const val DEFAULT_DECIDE_ENDPOINT = "https://aisenseapi.com/services/v1/decide"
+
+        /** Decide model used when the user leaves the model field blank. */
+        const val DEFAULT_DECIDE_MODEL = "clef"
 
         private const val PREFS_NAME = "ai_config"
         private const val KEY_PROVIDER = "provider"
